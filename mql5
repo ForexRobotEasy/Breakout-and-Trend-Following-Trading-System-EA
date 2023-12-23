@@ -1,0 +1,66 @@
+
+// Program Name: Breakout and Trend Following Trading System EA
+// Developer's Site: forexroboteasy.com
+// Development Name: Forex Robot Easy Team
+
+// Include necessary libraries
+#include <Trade\Trade.mqh>
+
+// Define constants
+#define SYMBOLS 'EURUSD', 'GBPUSD', 'USDJPY', 'AUDUSD', 'USDCAD'   // List of symbols to trade
+#define TIMEFRAME PERIOD_H1                                      // Trading timeframe
+#define STOP_LOSS 50                                             // Stop loss in pips
+#define TAKE_PROFIT 100                                          // Take profit in pips
+#define LOT_SIZE 0.01                                            // Lot size for trading
+
+// Define global variables
+CTrade trade;                                                   // Trade object
+
+// Define the entry function
+void OnTick()
+{
+    // Loop through all symbols
+    for (int i = 0; i < ArraySize(SYMBOLS); i++)
+    {
+        // Select the symbol
+        trade.SelectSymbol(SYMBOLS[i]);
+
+        // Calculate the high and low of the previous candle
+        double high = High[i+1];
+        double low = Low[i+1];
+
+        // Calculate the breakout levels
+        double buyLevel = high + (high - low) * 0.1;
+        double sellLevel = low - (high - low) * 0.1;
+
+        // Check if the current price is above the buy level
+        if (Close[i] > buyLevel)
+        {
+            // Open a buy trade
+            trade.Buy(LOT_SIZE, SYMBOLS[i], 0, 0, STOP_LOSS, TAKE_PROFIT);
+
+            // Print a message
+            Print('Buy trade opened for ', SYMBOLS[i]);
+        }
+
+        // Check if the current price is below the sell level
+        if (Close[i] < sellLevel)
+        {
+            // Open a sell trade
+            trade.Sell(LOT_SIZE, SYMBOLS[i], 0, 0, STOP_LOSS, TAKE_PROFIT);
+
+            // Print a message
+            Print('Sell trade opened for ', SYMBOLS[i]);
+        }
+    }
+}
+
+// Define the exit function
+void OnDeinit(const int reason)
+{
+    // Close all open trades
+    trade.CloseAll();
+
+    // Print a message
+    Print('All trades closed.');
+}
